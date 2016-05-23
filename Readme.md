@@ -1,90 +1,32 @@
 
-# redux-effects-localstorage
+# redux-effects-asyncstorage
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
-Redux effects driver for localStorage
+Redux effects driver for React Native AsyncStorage
 
 ## Installation
 
-    $ npm install redux-effects-localstorage
+    $ npm i https://github.com/shadye/redux-effects-asyncstorage --save
 
 ## Usage
 
-Simple [redux-effects](https://github.com/redux-effects/redux-effects) driver for [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).  Add it to your redux middleware stack like this:
+Simple [redux-effects](https://github.com/redux-effects/redux-effects) driver for [AsyncStorage](https://facebook.github.io/react-native/docs/asyncstorage.html#content).  Add it to your redux middleware stack like this:
 
 ```javascript
-import localStorage from 'redux-effects-localstorage'
+import asyncStorage from 'redux-effects-asyncStorage'
 
-applyMiddleware(localStorage(window.localStorage))(store)
+applyMiddleware(asyncStorage)(store)
 ```
 
-And then dispatch it actions, like this:
+And then use the action creators that come bundled with it:
 
 ```javascript
-store.dispatch({
-  type: 'EFFECT_LOCALSTORAGE',
-  payload: {
-    type: 'setItem',
-    key: 'todos.0',
-    value: 'Clean the kitchen'
-  }
-})
+import asyncStorage from 'redux-effects-asyncStorage'
+
+store.dispatch(asyncStorage.setItem('todos.0', 'Clean the kitchen'))
 ```
-
-Or, use the action creators that come bundled with it:
-
-```javascript
-import localStorage from 'redux-effects-localStorage'
-
-store.dispatch(localStorage.setItem('todos.0', 'Clean the kitchen'))
-```
-
-The API of the action creators is identical to that of the native localStorage object, with the sole exception that the property `length` has been changed to the function `getLength`.
-
-## Example - Auth token getter/setter
-
-Getting/setting an auth token:
-
-```javascript
-function authToken (newToken) {
-  return arguments.length > 0 
-    ? localStorage.setItem('authToken', newToken)
-    : localStorage.getItem('authToken')
-}
-
-function setUserToken (token) {
-  return {type: 'SET_USER_TOKEN', payload: token}
-}
-
-function reducer (state, action) {
-  if (action.type === 'SET_USER_TOKEN') {
-    return {
-      ...state,
-      authToken: action.payload
-    }
-  }
-}
-
-function checkUserStatus () {
-  store
-   .dispatch(authToken())
-   .then(token => store.dispatch(setUserToken(token))
-}
-```
-
-## Use with sessionStorage
-
-Each of the action creators takes another parameter, `STORAGE_TYPE`. You can access this from `STORAGE_TYPE` exported by this module. Values are `local` (the default) and `session`, which you can use if you want the actions to be applied to session storage rather than local storage.
 
 ## License
 
 The MIT License
-
-Copyright &copy; 2015, Weo.io &lt;info@weo.io&gt;
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
