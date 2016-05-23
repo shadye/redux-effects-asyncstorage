@@ -1,13 +1,10 @@
+import { AsyncStorage } from 'react-native';
+
 /**
  * Action type
  */
 
 const EFFECT_STORAGE = 'EFFECT_STORAGE';
-
-const STORAGE_TYPE = {
-  local: 'LOCAL',
-  session: 'SESSION',
-};
 
 /**
  * redux-storage
@@ -19,21 +16,31 @@ function createStorage() {
       ? execute(action.payload)
       : next(action);
 
-  function execute({ type, storageType, key, value, n }) {
-    const store = storageType === STORAGE_TYPE.local ? window.localStorage : window.sessionStorage;
+  function execute({ type, key, value }) {
+    const store = AsyncStorage;
     switch (type) {
-      case 'key':
-        return Promise.resolve(store.key(n));
       case 'getItem':
         return Promise.resolve(store.getItem(key)).then(v => parseValue(v));
       case 'setItem':
         return Promise.resolve(store.setItem(key, JSON.stringify(value)));
+      case 'mergeItem':
+        return Promise.resolve(store.mergeItem(key, JSON.stringify(value)));
       case 'removeItem':
         return Promise.resolve(store.removeItem(key, value));
+      case 'multiGet':
+        // key format must be ['key1', 'key2']
+        return Promise.resolve(store.multiGet(key)).then(v => return v);
+      case 'multiSet':
+        // key format must be [ ['key1', 'val1'], ['key2', 'val2']]
+        return Promise.resolve(store.multiSet(key));
+      case 'multiMerge':
+        // key format must be [ ['key1', 'val1'], ['key2', 'val2']]
+        return Promise.resolve(store.multiMerge(key));
+      case 'multiRemove':
+        // key format must be ['key1', 'key2']
+        return Promise.resolve(store.multiRemove(key));
       case 'clear':
         return Promise.resolve(store.clear());
-      case 'length':
-        return Promise.resolve(store.length);
       default:
         throw new Error('redux-storage unknown storage action type');
     }
@@ -61,28 +68,40 @@ function createAction(payload) {
   };
 }
 
-function key(n, storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'key', storageType, n });
+function getItem(key) {
+  return createAction({ type: 'getItem', key });
 }
 
-function getItem(key, storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'getItem', storageType, key });
+function setItem(key, value) {
+  return createAction({ type: 'setItem', key, value });
 }
 
-function setItem(key, value, storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'setItem', storageType, key, value });
+function removeItem(key) {
+  return createAction({ type: 'removeItem', key });
 }
 
-function removeItem(key, storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'removeItem', storageType, key });
+function mergeItem(key, keyDelta) {
+  return createAction({ type: 'mergeItem', key, keyDelta });
 }
 
-function clear(storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'clear', storageType });
+function multiGet(keys) {
+  return createAction({ type: 'multiGet', keys });
 }
 
-function getLength(storageType = STORAGE_TYPE.local) {
-  return createAction({ type: 'length', storageType });
+function multiSet(keyValuePairs) {
+  return createAction({ type: 'multiSet', keyValuePairs });
+}
+
+function multiRemove(keys) {
+  return createAction({ type: 'multiRemove', keys });
+}
+
+function multiMerge(keyValuePairs) {
+  return createAction({ type: 'multiMerge', keyValuePairs });
+}
+
+function clear() {
+  return createAction({ type: 'clear' });
 }
 
 /**
@@ -91,11 +110,14 @@ function getLength(storageType = STORAGE_TYPE.local) {
 
 export default createStorage;
 export {
-  key,
   getItem,
   setItem,
   removeItem,
+  mergeItem,
+  multiGet,
+  multiSet,
+  multiRemove,
+  multiMerge
   clear,
-  getLength,
   STORAGE_TYPE,
 };
